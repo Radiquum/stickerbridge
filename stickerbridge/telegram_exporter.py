@@ -71,9 +71,8 @@ class TelegramExporter:
             raw_data = await self.client.download_media(sticker_document, file=bytes)
             if sticker_document.mime_type == 'image/webp':
                 data, width, height = _convert_image(raw_data)
-                result.append(Sticker(data, alt, 'image/png'))
             if sticker_document.mime_type == 'application/x-tgsticker':
                 data = _convert_animation(raw_data)
-                result.append(Sticker(data, alt, 'image/webp'))
+            result.append(Sticker(data, alt))
 
         return result

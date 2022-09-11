@@ -1,6 +1,7 @@
 import os
 
 import aiofiles.os
+import magic
 import logging
 
 from nio import AsyncClient, UploadResponse, ErrorResponse, RoomGetStateEventError
@@ -52,7 +53,8 @@ async def upload_stickerpack(client: AsyncClient, room_id: str, stickerset: Matr
     return await client.room_put_state(room_id, 'im.ponies.room_emotes', stickerset.json(), state_key=stickerset.name())
 
 
-async def upload_image(client: AsyncClient, image: str, mime_type: str):
+async def upload_image(client: AsyncClient, image: str):
+    mime_type = magic.from_file(image, mime=True)
     file_stat = await aiofiles.os.stat(image)
     async with aiofiles.open(image, "r+b") as f:
         resp, maybe_keys = await client.upload(

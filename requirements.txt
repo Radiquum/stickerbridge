@@ -3,5 +3,6 @@ pillow
 matrix-nio
 pyyaml
 aiofiles
+python-magic
 lottie
 cairosvg

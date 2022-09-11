@@ -1,9 +1,8 @@
 class Sticker:
     """Custom type for easier transfering sticker data between functions and classes with simple lists and returns"""
-    def __init__(self, image_data, alt_text: str, mime_type: str):
+    def __init__(self, image_data, alt_text: str):
         self.image_data = image_data
         self.alt_text = alt_text
-        self.mime_type = mime_type
 
 
 class MatrixStickerset:
