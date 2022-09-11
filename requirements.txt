@@ -1,0 +1,7 @@
+telethon
+pillow
+matrix-nio
+pyyaml
+aiofiles
+lottie
+cairosvg

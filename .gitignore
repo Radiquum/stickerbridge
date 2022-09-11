@@ -1,0 +1,3 @@
+config.yaml
+data/*
+telegram_secrets.session
