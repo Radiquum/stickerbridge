@@ -23,7 +23,7 @@ pip install -r requirements.txt
 ```
 - Copy example config file ```cp config.yaml.example config.yaml```
 - Fill the config file with creditials for Matrix account and Telegram bot you created
-- Run the bot ```python main.py```
+- Run the bot ```python stickerbridge/main.py```
 
 ## Usage
 Invite the bot in a room (currently does not support encrypted rooms), type ```!sb help``` to list available commands.
