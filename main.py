@@ -14,6 +14,7 @@ from telegram_exporter import TelegramExporter
 
 
 async def main():
+    os.makedirs('data', exist_ok=True)
     if not os.path.exists('config.yaml'):
         shutil.copy('config.yaml.example', 'config.yaml')
         logging.warning('Please fill in config.yaml file, then restart the bot')
