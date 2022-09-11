@@ -1,13 +1,16 @@
-command_prefix: "!sb"
-
-matrix_homeserver: "https://matrix.org"
-matrix_username: "@username:example.com"
-matrix_password: "password"
-
-matrix_bot_name: "Telegram stickers bot"
-
+# api_id and api_hash can be obtained from https://my.telegram.org/apps
+# bot token can be obtained by talking to https://t.me/botfather
 telegram_api_id: 1234567
 telegram_api_hash: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 telegram_bot_token: "1234567890:aaaaaaaaaaaaaaaaaaaaaa--aaaaaaaaaaa"
+
+# Creditials for the Matrix account to being used by the bot
+# Please use dedicated, freshly created one
+matrix_homeserver: "https://matrix.org"
+matrix_username: "@username:matrix.org"
+matrix_password: "password"
+
+command_prefix: "!sb"
+matrix_bot_name: "Telegram stickers bot"
 
 log_level: INFO

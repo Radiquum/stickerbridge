@@ -49,13 +49,6 @@ def _convert_animation(data: bytes, width=256, height=0):
 
 class TelegramExporter:
     def __init__(self, api_id: int, api_hash: str, bot_token: str, secrets_filename: str):
-        """Exports Telegram stickers as images.
-
-        :param api_id: Can be obtained at https://my.telegram.org/apps
-        :param api_hash: Can be obtained at https://my.telegram.org/apps
-        :param bot_token: Required to get stickers, can be obtained by talking to https://t.me/botfather
-        :param secrets_filename: Session name, it would be filename of stored creditials
-        """
         self.api_id = api_id
         self.api_hash = api_hash
         self.bot_token = bot_token
