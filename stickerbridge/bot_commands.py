@@ -43,30 +43,24 @@ class Command:
         pack_name = self.args[0]
         reuploader = MatrixReuploader(self.client, self.room, exporter=self.tg_exporter)
         async for status in reuploader.import_stickerset_to_room(pack_name):
-            text = 'Warning: Unknown status'
-            if status == MatrixReuploader.STATUS_DOWNLOADING:
-                text = f'Downloading stickerpack {pack_name}...'
-            if status == MatrixReuploader.STATUS_UPLOADING:
-                text = f'Uploading stickerpack {pack_name}...'
-            if status == MatrixReuploader.STATUS_UPDATING_ROOM_STATE:
-                text = f'Updating room state...️'
-
-            if status == MatrixReuploader.STATUS_OK:
-                text = 'Done 😄'
-            if status == MatrixReuploader.STATUS_NO_PERMISSION:
-                text = (
+            switch = {
+                MatrixReuploader.STATUS_DOWNLOADING: f'Downloading stickerpack {pack_name}...',
+                MatrixReuploader.STATUS_UPLOADING: f'Uploading stickerpack {pack_name}...',
+                MatrixReuploader.STATUS_UPDATING_ROOM_STATE: f'Uploading stickerpack {pack_name}...',
+                MatrixReuploader.STATUS_OK: 'Done 😄',
+                MatrixReuploader.STATUS_NO_PERMISSION: (
                     'I do not have permissions to create any stickerpack in this room\n'
                     'Please, give me mod 🙏'
-                )
-            if status == MatrixReuploader.STATUS_PACK_EXISTS:
-                text = (
+                ),
+                MatrixReuploader.STATUS_PACK_EXISTS: (
                     f"Stickerpack '{pack_name}' already exists.\n"
                     'Please delete it first.'
-                )
-            if status == MatrixReuploader.STATUS_PACK_EMPTY:
-                text = (
+                ),
+                MatrixReuploader.STATUS_PACK_EMPTY: (
                     f'Warning: Telegram pack {pack_name} find out empty or not existing.'
                 )
+            }
+            text = switch.get(status, 'Warning: Unknown status')
             await send_text_to_room(self.client, self.room.room_id, text)
 
     async def _unknown_command(self):
