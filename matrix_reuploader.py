@@ -46,7 +46,7 @@ class MatrixReuploader:
         converted_stickerset = await self.exporter.get_stickerset(stickerset.name())
         yield self.STATUS_UPLOADING
         for sticker in converted_stickerset:
-            with tempfile.NamedTemporaryFile('w+b') as file:
+            with tempfile.NamedTemporaryFile('w+b', suffix=sticker.mime_type.replace('image/', '')) as file:
                 file.write(sticker.image_data)
                 sticker_mxc = await upload_image(self.client, file.name, sticker.mime_type)
             stickerset.add_sticker(sticker_mxc, sticker.alt_text)
