@@ -1,11 +1,8 @@
 from nio import AsyncClient, MatrixRoom
 
-from chat_functions import send_text_to_room, upload_image, upload_stickerpack, is_stickerpack_existing, has_permission
+from chat_functions import send_text_to_room
 from matrix_reuploader import MatrixReuploader
-from sticker_types import MatrixStickerset
 from telegram_exporter import TelegramExporter
-
-import tempfile
 
 
 class Command:

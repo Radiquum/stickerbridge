@@ -1,7 +1,7 @@
 import logging
 import traceback
 
-from nio import AsyncClient, MatrixRoom, RoomMessageText, InviteEvent, InviteMemberEvent
+from nio import AsyncClient, MatrixRoom, RoomMessageText, InviteMemberEvent
 
 from bot_commands import Command
 from chat_functions import send_text_to_room
