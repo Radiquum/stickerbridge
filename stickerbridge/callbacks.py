@@ -25,6 +25,10 @@ class Callbacks:
         if event.sender == self.client.user:
             return
 
+        # Do not respond to m.notice (https://spec.matrix.org/v1.3/client-server-api/#mnotice)
+        if event.source['content']['msgtype'] == 'm.notice':
+            return
+
         if event.body.startswith(self.command_prefix) or room.member_count <= 2:
             command_string = event.body.replace(self.command_prefix, '').strip()
             command = Command(self.client, room, command_string, self.tg_exporter)
