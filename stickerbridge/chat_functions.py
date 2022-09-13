@@ -11,7 +11,7 @@ from sticker_types import MatrixStickerset
 
 async def send_text_to_room(client: AsyncClient, room_id: str, message: str):
     content = {
-        "msgtype": "m.text",
+        "msgtype": "m.notice",
         "body": message,
     }
     return await client.room_send(

@@ -46,8 +46,8 @@ class Command:
             switch = {
                 MatrixReuploader.STATUS_DOWNLOADING: f'Downloading stickerpack {pack_name}...',
                 MatrixReuploader.STATUS_UPLOADING: f'Uploading stickerpack {pack_name}...',
-                MatrixReuploader.STATUS_UPDATING_ROOM_STATE: f'Uploading stickerpack {pack_name}...',
-                MatrixReuploader.STATUS_OK: 'Done 😄',
+                MatrixReuploader.STATUS_UPDATING_ROOM_STATE: f'Updating room state...',
+                MatrixReuploader.STATUS_OK: 'Done',
                 MatrixReuploader.STATUS_NO_PERMISSION: (
                     'I do not have permissions to create any stickerpack in this room\n'
                     'Please, give me mod 🙏'
