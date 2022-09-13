@@ -1,3 +1,4 @@
+from multiprocessing import Pool
 from typing import List
 
 from lottie.importers import importers
@@ -47,6 +48,15 @@ def _convert_animation(data: bytes, width=256, height=0):
     return out.getvalue()
 
 
+def _process_sticker(document) -> Sticker:
+    alt = document.attributes[1].alt
+    if document.mime_type == 'image/webp':
+        data, width, height = _convert_image(document.downloaded_data_)
+    if document.mime_type == 'application/x-tgsticker':
+        data = _convert_animation(document.downloaded_data_)
+    return Sticker(data, alt)
+
+
 class TelegramExporter:
     def __init__(self, api_id: int, api_hash: str, bot_token: str, secrets_filename: str):
         self.api_id = api_id
@@ -65,14 +75,14 @@ class TelegramExporter:
         try:
             sticker_set = await self.client(GetStickerSetRequest(InputStickerSetShortName(short_name=pack_name), hash=0))
         except StickersetInvalidError:
-            return result
-        for sticker_document in sticker_set.documents:
-            alt = sticker_document.attributes[1].alt
-            raw_data = await self.client.download_media(sticker_document, file=bytes)
-            if sticker_document.mime_type == 'image/webp':
-                data, width, height = _convert_image(raw_data)
-            if sticker_document.mime_type == 'application/x-tgsticker':
-                data = _convert_animation(raw_data)
-            result.append(Sticker(data, alt))
+            return result  # return empty on fail
+
+        downloaded_documents = []
+        for document_data in sticker_set.documents:
+            document_data.downloaded_data_ = await self.client.download_media(document_data, file=bytes)
+            downloaded_documents.append(document_data)
+
+        pool = Pool()
+        result = pool.map(_process_sticker, downloaded_documents)
 
         return result
