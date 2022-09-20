@@ -27,5 +27,5 @@ pip install -r requirements.txt
 
 ## Usage
 Invite the bot in a room (currently does not support encrypted rooms), type ```!sb help``` to list available commands.
-Type ```import <stickerpack name>``` to import stickerpack to the room, ex. ```import bestblobcats```.
+Type ```!sb import <stickerpack name>``` to import stickerpack to the room, ex. ```!sb import bestblobcats```.
 After importing is completed, you will see stickerpack in the menu.
