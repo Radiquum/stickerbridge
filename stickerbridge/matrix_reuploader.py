@@ -32,18 +32,18 @@ class MatrixReuploader:
     async def _has_permission_to_upload(self) -> bool:
         return await has_permission(self.client, self.room.room_id, 'state_default')
 
-    async def import_stickerset_to_room(self, pack_name: str):
+    async def import_stickerset_to_room(self, pack_name: str, import_name: str):
         if not await self._has_permission_to_upload():
             yield self.STATUS_NO_PERMISSION
             return
 
-        stickerset = MatrixStickerset(pack_name)
+        stickerset = MatrixStickerset(import_name)
         if await is_stickerpack_existing(self.client, self.room.room_id, stickerset.name()):
             yield self.STATUS_PACK_EXISTS
             return
 
         yield self.STATUS_DOWNLOADING
-        converted_stickerset = await self.exporter.get_stickerset(stickerset.name())
+        converted_stickerset = await self.exporter.get_stickerset(pack_name)
         yield self.STATUS_UPLOADING
         for sticker in converted_stickerset:
             with tempfile.NamedTemporaryFile('w+b') as file:
