@@ -69,6 +69,8 @@ class MatrixReuploader:
         pack_location = import_name
         if isDefault:
             pack_location = ""
+        elif pack_location.startswith("http"):
+            pack_location = pack_location.split("/")[-1]
 
         await upload_stickerpack(self.client, self.room.room_id, stickerset, pack_location)
 
