@@ -49,8 +49,8 @@ async def is_stickerpack_existing(client: AsyncClient, room_id: str, pack_name: 
     return not response.content == {}
 
 
-async def upload_stickerpack(client: AsyncClient, room_id: str, stickerset: MatrixStickerset):
-    return await client.room_put_state(room_id, 'im.ponies.room_emotes', stickerset.json(), state_key=stickerset.name())
+async def upload_stickerpack(client: AsyncClient, room_id: str, stickerset: MatrixStickerset, name):
+    return await client.room_put_state(room_id, 'im.ponies.room_emotes', stickerset.json(), state_key=name)
 
 
 async def upload_image(client: AsyncClient, image: str):

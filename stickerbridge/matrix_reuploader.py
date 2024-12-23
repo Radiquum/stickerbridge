@@ -1,4 +1,5 @@
 import tempfile
+import os
 
 from nio import MatrixRoom, AsyncClient
 
@@ -46,9 +47,13 @@ class MatrixReuploader:
         converted_stickerset = await self.exporter.get_stickerset(pack_name)
         yield self.STATUS_UPLOADING
         for sticker in converted_stickerset:
-            with tempfile.NamedTemporaryFile('w+b') as file:
+            with tempfile.NamedTemporaryFile('w+b', delete=False) as file:
                 file.write(sticker.image_data)
                 sticker_mxc = await upload_image(self.client, file.name)
+
+                file.close()
+                os.unlink(file.name)
+
             stickerset.add_sticker(sticker_mxc, sticker.alt_text)
 
         if not stickerset.count():
@@ -56,6 +61,13 @@ class MatrixReuploader:
             return
 
         yield self.STATUS_UPDATING_ROOM_STATE
-        await upload_stickerpack(self.client, self.room.room_id, stickerset)
+
+        name = stickerset.name()
+        if import_name.lower() == "default":
+            name = ""
+        elif import_name.startswith("http"):
+            name = import_name.split("/")[-1]
+
+        await upload_stickerpack(self.client, self.room.room_id, stickerset, name)
 
         yield self.STATUS_OK
