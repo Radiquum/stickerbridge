@@ -2,3 +2,7 @@ config.yaml
 data/*
 telegram_secrets.session
 */.directory
+venv
+.idea/
+.vscode/
+__pycache__

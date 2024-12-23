@@ -64,7 +64,7 @@ class TelegramExporter:
         self.bot_token = bot_token
         self.secrets_filename = secrets_filename
 
-        self.client = TelegramClient(self.secrets_filename, self.api_id, self.api_hash)
+        self.client = TelegramClient(self.secrets_filename, self.api_id, self.api_hash, system_version="4.16.30-vxStickerBridge")
 
     async def connect(self):
         await self.client.start(bot_token=self.bot_token)
