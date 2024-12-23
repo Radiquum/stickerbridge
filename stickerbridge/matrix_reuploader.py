@@ -33,12 +33,16 @@ class MatrixReuploader:
     async def _has_permission_to_upload(self) -> bool:
         return await has_permission(self.client, self.room.room_id, 'state_default')
 
-    async def import_stickerset_to_room(self, pack_name: str, import_name: str):
+    async def import_stickerset_to_room(self, pack_name: str, import_name: str, isDefault: bool):
         if not await self._has_permission_to_upload():
             yield self.STATUS_NO_PERMISSION
             return
 
-        stickerset = MatrixStickerset(import_name)
+        name = import_name
+        if import_name.startswith("http"):
+            name = import_name.split("/")[-1]
+
+        stickerset = MatrixStickerset(name)
         if await is_stickerpack_existing(self.client, self.room.room_id, stickerset.name()):
             yield self.STATUS_PACK_EXISTS
             return
@@ -62,12 +66,10 @@ class MatrixReuploader:
 
         yield self.STATUS_UPDATING_ROOM_STATE
 
-        name = stickerset.name()
-        if import_name.lower() == "default":
-            name = ""
-        elif import_name.startswith("http"):
-            name = import_name.split("/")[-1]
+        pack_location = import_name
+        if isDefault:
+            pack_location = ""
 
-        await upload_stickerpack(self.client, self.room.room_id, stickerset, name)
+        await upload_stickerpack(self.client, self.room.room_id, stickerset, pack_location)
 
         yield self.STATUS_OK
