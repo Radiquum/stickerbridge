@@ -17,7 +17,7 @@ from sticker_types import Sticker
 def _convert_image(data: bytes) -> (bytes, int, int):
     image: Image.Image = Image.open(BytesIO(data)).convert("RGBA")
     new_file = BytesIO()
-    image.save(new_file, "webp")
+    image.save(new_file, "png")
     w, h = image.size
     if w > 256 or h > 256:
         if w > h:

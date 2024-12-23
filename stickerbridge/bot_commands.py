@@ -36,6 +36,7 @@ class Command:
             "List of commands:\n"
             "help - Show this help message.\n"
             "import <url|pack_name> [import_name] [-p | --primary] - Use this to import Telegram stickers from given link. import_name is pack_name if not provided. if -p flag is provided, pack will be uploaded as a Default Pack for this room."
+            "preview [pack_name] - Use this to create a preview for a Telegram stickers. If pack_name is not provided, then preview is generated for a primary pack."
         )
         await send_text_to_room(self.client, self.room.room_id, text)
 
@@ -83,36 +84,32 @@ class Command:
             await send_text_to_room(self.client, self.room.room_id, text)
 
     async def _generate_preview(self):
-        await send_text_to_room(
+        pack_name = ""
+        if not self.args:
+            isDefault = True
+            await send_text_to_room(
             self.client,
             self.room.room_id,
-            f"Not implemented YET",)
-        return
+            f"Previewing primary pack")
+        else:
+            pack_name = self.args[0]
 
-        # if not self.args:
-        #     await send_text_to_room(
-        #     self.client,
-        #     self.room.room_id,
-        #     f"You need to provide pack name. Example: !sb preview pack_name",)
-        #     return
-
-        # pack_name = self.args[0]
-        # previewer = MatrixPreview(self.client, self.room)
-        # async for status in previewer.generate_stickerset_preview_to_room(pack_name):
-        #     switch = {
-        #         MatrixPreview.STATUS_OK: "Done",
-        #         MatrixPreview.STATUS_NO_PERMISSION: (
-        #             "I do not have permissions to update this room\n"
-        #             "Please, give me mod 🙏"
-        #         ),
-        #         MatrixPreview.STATUS_PACK_NOT_EXISTS: (
-        #             f"Stickerpack '{pack_name}' does not exists.\n"
-        #             "Please create it first."
-        #         ),
-        #         MatrixPreview.STATUS_UPDATING_ROOM_STATE: f"Updating room state...",
-        #     }
-        #     text = switch.get(status, "Warning: Unknown status")
-        #     await send_text_to_room(self.client, self.room.room_id, text)
+        previewer = MatrixPreview(self.client, self.room)
+        async for status in previewer.generate_stickerset_preview_to_room(pack_name):
+            switch = {
+                MatrixPreview.STATUS_OK: "Done",
+                MatrixPreview.STATUS_NO_PERMISSION: (
+                    "I do not have permissions to update this room\n"
+                    "Please, give me mod 🙏"
+                ),
+                MatrixPreview.STATUS_PACK_NOT_EXISTS: (
+                    f"Stickerpack '{pack_name}' does not exists.\n"
+                    "Please create it first."
+                ),
+                MatrixPreview.STATUS_UPDATING_ROOM_STATE: f"Updating room state...",
+            }
+            text = switch.get(status, "Warning: Unknown status")
+            await send_text_to_room(self.client, self.room.room_id, text)
 
     async def _unknown_command(self):
         await send_text_to_room(

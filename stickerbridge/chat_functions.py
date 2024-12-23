@@ -20,6 +20,12 @@ async def send_text_to_room(client: AsyncClient, room_id: str, message: str):
         content,
     )
 
+async def send_sticker_to_room(client: AsyncClient, room_id: str, content: dict):
+    return await client.room_send(
+        room_id,
+        "m.sticker",
+        content,
+    )
 
 async def has_permission(client: AsyncClient, room_id: str, permission_type: str):
     """Reimplementation of AsyncClient.has_permission because matrix-nio version always gives an error
@@ -52,6 +58,8 @@ async def is_stickerpack_existing(client: AsyncClient, room_id: str, pack_name: 
 async def upload_stickerpack(client: AsyncClient, room_id: str, stickerset: MatrixStickerset, name):
     return await client.room_put_state(room_id, 'im.ponies.room_emotes', stickerset.json(), state_key=name)
 
+async def update_room_image(client: AsyncClient, room_id: str, preview: dict):
+    return await client.room_put_state(room_id, 'm.room.avatar', preview)
 
 async def upload_image(client: AsyncClient, image: str):
     mime_type = magic.from_file(image, mime=True)

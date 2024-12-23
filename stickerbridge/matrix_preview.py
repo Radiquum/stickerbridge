@@ -1,12 +1,6 @@
-import tempfile
-import os
-
 from nio import MatrixRoom, AsyncClient
 
-from chat_functions import has_permission, is_stickerpack_existing, send_text_to_room, upload_image, upload_stickerpack
-from sticker_types import Sticker, MatrixStickerset
-from telegram_exporter import TelegramExporter
-
+from chat_functions import has_permission, is_stickerpack_existing, send_sticker_to_room, update_room_image
 
 class MatrixPreview:
 
@@ -30,40 +24,18 @@ class MatrixPreview:
             yield self.STATUS_NO_PERMISSION
             return
 
-        name = pack_name
-        if pack_name.lower() == "default":
-            name = ""
-
-        if not await is_stickerpack_existing(self.client, self.room.room_id, name):
+        if not await is_stickerpack_existing(self.client, self.room.room_id, pack_name):
             yield self.STATUS_PACK_NOT_EXISTS
             return
 
-        stickerpack = await self.client.room_get_state_event(self.room.room_id, 'im.ponies.room_emotes', name)
-
-        # {'pack': {'display_name': 'https://t.me/addstickers/kentai_radiquum'}, 'images': {'🤗': {'url': 'mxc://wah.su/OzamJbZNgcIIDeMXofMnmkBO', 'usage': ['sticker']}, '🤗-1': {...}}}
-
-        print(stickerpack)
-        # yield self.STATUS_DOWNLOADING
-        # converted_stickerset = await self.exporter.get_stickerset(pack_name)
-        # yield self.STATUS_UPLOADING
-        # for sticker in converted_stickerset:
-        #     with tempfile.NamedTemporaryFile('w+b', delete=False) as file:
-        #         file.write(sticker.image_data)
-        #         sticker_mxc = await upload_image(self.client, file.name)
-
-        #         file.close()
-        #         os.unlink(file.name)
-
-        #     stickerset.add_sticker(sticker_mxc, sticker.alt_text)
-
-        # if not stickerset.count():
-        #     yield self.STATUS_PACK_EMPTY
-        #     return
-
         yield self.STATUS_UPDATING_ROOM_STATE
 
-        
+        stickerpack = await self.client.room_get_state_event(self.room.room_id, 'im.ponies.room_emotes', pack_name)
+        first_item = dict(list(stickerpack.content["images"].items())[:1])
+        _first_item = first_item.popitem()
+        await update_room_image(self.client, self.room.room_id, {"url": _first_item[1]['url']})
 
-        # await upload_stickerpack(self.client, self.room.room_id, stickerset, name)
+        for stick in list(stickerpack.content["images"].items())[:5]:
+            await send_sticker_to_room(self.client, self.room.room_id, {"body": stick[0], "url": stick[1]['url'], "info": {"mimetype":"image/png"}})
 
         yield self.STATUS_OK
