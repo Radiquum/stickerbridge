@@ -32,7 +32,7 @@ class Command:
             "I am the bot that imports stickers from Telegram and upload them to Matrix rooms\n\n"
             "List of commands:\n"
             "help - Show this help message.\n"
-            "import <pack_name> [import_name] - Use this to import Telegram stickers from given link. import_name is pack_name if not provided"
+            "import <url|pack_name> [import_name] - Use this to import Telegram stickers from given link. import_name is pack_name if not provided"
         )
         await send_text_to_room(self.client, self.room.room_id, text)
 

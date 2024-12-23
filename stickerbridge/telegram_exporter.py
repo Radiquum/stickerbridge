@@ -72,8 +72,12 @@ class TelegramExporter:
     async def get_stickerset(self, pack_name: str) -> list[Sticker]:
         result: List[Sticker] = list()
 
+        short_name = pack_name
+        if short_name.startswith('http'):
+            short_name = pack_name.split("/")[-1]
+
         try:
-            sticker_set = await self.client(GetStickerSetRequest(InputStickerSetShortName(short_name=pack_name), hash=0))
+            sticker_set = await self.client(GetStickerSetRequest(InputStickerSetShortName(short_name=short_name), hash=0))
         except StickersetInvalidError:
             return result  # return empty on fail
 
