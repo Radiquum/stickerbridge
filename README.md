@@ -29,3 +29,8 @@ pip install -r requirements.txt
 Invite the bot in a room (currently does not support encrypted rooms), type ```!sb help``` to list available commands.
 Type ```!sb import <stickerpack name>``` to import stickerpack to the room, ex. ```!sb import bestblobcats```.
 After importing is completed, you will see stickerpack in the menu.
+
+## Original Project
+This is a fork of https://codeberg.org/Didek/stickerbridge by Didek
+
+Modifications list is viewable in commit messages
