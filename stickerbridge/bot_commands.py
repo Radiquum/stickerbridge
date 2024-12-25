@@ -5,6 +5,46 @@ from matrix_reuploader import MatrixReuploader
 from matrix_preview import MatrixPreview
 from telegram_exporter import TelegramExporter
 
+async def _parse_args(args: list[str]) -> tuple[str, str, list[str]]:
+        _pack_name = ""
+        _parsed_args = []
+        _import_name = []
+        _is_import_name = False
+        for index, arg in enumerate(args):
+            if index == 0 and not arg.startswith("-"): # pack name should always be telegram pack shortName or full url
+                if arg.startswith("http"):
+                    _pack_name = arg.split("/")[-1]
+                else:
+                    _pack_name = arg
+                continue
+
+            if index == 1 and not arg.startswith("-") and arg.startswith("\""): # import name should always be 2nd arg
+                arg = arg.strip("\"")
+                _is_import_name = True
+            elif index == 1 and not arg.startswith("-"):
+                _import_name.append(arg)
+                continue
+
+            if not arg.startswith("-") and arg.endswith("\""):
+                if _is_import_name:
+                    arg = arg.strip("\"")
+                    _import_name.append(arg)
+                _is_import_name = False
+                continue
+
+            if _is_import_name and not arg.startswith("-"):
+                _import_name.append(arg)
+                continue
+
+            _parsed_args.append(arg) # everything else are a flag
+            continue
+
+        if len(_import_name) == 0: # finalizing the import name
+            _import_name = _pack_name
+        else:
+            _import_name = " ".join(_import_name)
+
+        return _pack_name, _import_name, _parsed_args
 
 class Command:
     def __init__(
@@ -35,7 +75,7 @@ class Command:
             "I am the bot that imports stickers from Telegram and upload them to Matrix rooms\n\n"
             "List of commands:\n"
             "help - Show this help message.\n"
-            "import <url|pack_name> [import_name] [-p | --primary] - Use this to import Telegram stickers from given link. import_name is pack_name if not provided. if -p flag is provided, pack will be uploaded as a Default Pack for this room."
+            "import <url|pack_name> [\"import name\"] [-p | --primary] - Use this to import Telegram stickers from given link. import_name is pack_name if not provided. if -p flag is provided, pack will be uploaded as a Default Pack for this room."
             "preview [pack_name] - Use this to create a preview for a Telegram stickers. If pack_name is not provided, then preview is generated for a primary pack."
         )
         await send_text_to_room(self.client, self.room.room_id, text)
@@ -43,20 +83,16 @@ class Command:
     async def _import_stickerpack(self):
         if not self.args:
             text = (
-                "You need to enter stickerpack name.\n"
+                "You need to enter stickerpack name or url.\n"
                 "Type command 'help' for more information."
             )
             await send_text_to_room(self.client, self.room.room_id, text)
             return
 
-        pack_name = self.args[0]
-
-        import_name = pack_name
-        if not (len(self.args) > 1 and self.args[1] in ["-p", "--primary"]):
-            import_name = self.args[1] if len(self.args) > 1 else pack_name
+        pack_name, import_name, flags = await _parse_args(self.args)
 
         isDefault = False
-        if (len(self.args) > 1 and self.args[1] in ["-p", "--primary"]) or (len(self.args) > 2 and self.args[2] in ["-p", "--primary"]):
+        if any(x in ["-p", "--primary"] for x in flags):
             isDefault = True
 
         reuploader = MatrixReuploader(self.client, self.room, exporter=self.tg_exporter)
@@ -84,15 +120,12 @@ class Command:
             await send_text_to_room(self.client, self.room.room_id, text)
 
     async def _generate_preview(self):
-        pack_name = ""
+        pack_name, _, _ = await _parse_args(self.args)
         if not self.args:
-            isDefault = True
             await send_text_to_room(
             self.client,
             self.room.room_id,
             f"Previewing primary pack")
-        else:
-            pack_name = self.args[0]
 
         previewer = MatrixPreview(self.client, self.room)
         async for status in previewer.generate_stickerset_preview_to_room(pack_name):
