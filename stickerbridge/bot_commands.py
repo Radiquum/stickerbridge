@@ -75,8 +75,8 @@ class Command:
             "I am the bot that imports stickers from Telegram and upload them to Matrix rooms\n\n"
             "List of commands:\n"
             "help - Show this help message.\n"
-            "import <url|pack_name> [\"import name\"] [-p | --primary] - Use this to import Telegram stickers from given link. import_name is pack_name if not provided. if -p flag is provided, pack will be uploaded as a Default Pack for this room."
-            "preview [pack_name] - Use this to create a preview for a Telegram stickers. If pack_name is not provided, then preview is generated for a primary pack."
+            "import <url|pack_name> [\"import name\"] [-p | --primary] - Use this to import Telegram stickers from given link. import_name is pack_name if not provided. if -p flag is provided, pack will be uploaded as a Default Pack for this room.\n"
+            "preview [pack_name] - Use this to create a preview for a Telegram stickers. If pack_name is not provided, then preview is generated for a primary pack.\n"
         )
         await send_text_to_room(self.client, self.room.room_id, text)
 
@@ -120,17 +120,27 @@ class Command:
             await send_text_to_room(self.client, self.room.room_id, text)
 
     async def _generate_preview(self):
-        pack_name, _, _ = await _parse_args(self.args)
-        if not self.args:
+        pack_name, _, flags = await _parse_args(self.args)
+        if pack_name == "":
             await send_text_to_room(
             self.client,
             self.room.room_id,
             f"Previewing primary pack")
 
+        # TODO?: add --help flag
+
+        #
+        #   Flags:
+        #       -tu | --tg-url <telegram_url|telegram_shortname> - Use this flag if you want to include stickerpack url in the last message
+        #       -a | --artist <artist> - Use this flag if you want to include stickerpack artist in the last message and room topic
+        #       -au | --artist-url <artist_url> - Use this flag if you want to add artist url in to the last message and room topic
+        #       -s | --space <#space:homeserver> - Use this flag if you want to include space name in the room topic
+        #       -pu | --preview-url <website_url> - Use this flag if you want to include stickerpack preview url in the room topic
+        #       -upd | --update-room - Use this flag if you want to update room avatar, name and topic
+
         previewer = MatrixPreview(self.client, self.room)
-        async for status in previewer.generate_stickerset_preview_to_room(pack_name):
+        async for status in previewer.generate_stickerset_preview_to_room(pack_name, flags):
             switch = {
-                MatrixPreview.STATUS_OK: "Done",
                 MatrixPreview.STATUS_NO_PERMISSION: (
                     "I do not have permissions to update this room\n"
                     "Please, give me mod 🙏"
