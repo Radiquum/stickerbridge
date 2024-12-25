@@ -77,6 +77,13 @@ class Command:
             "help - Show this help message.\n"
             "import <url|pack_name> [\"import name\"] [-p | --primary] - Use this to import Telegram stickers from given link. import_name is pack_name if not provided. if -p flag is provided, pack will be uploaded as a Default Pack for this room.\n"
             "preview [pack_name] - Use this to create a preview for a Telegram stickers. If pack_name is not provided, then preview is generated for a primary pack.\n"
+            "\tFlags:\n"
+            "\t\t-tu | --tg-url <telegram_url|telegram_shortname> - Use this flag if you want to include stickerpack url in the last message\n"
+            "\t\t-a | --artist <artist> - Use this flag if you want to include stickerpack artist in the last message and room topic\n"
+            "\t\t-au | --artist-url <artist_url> - Use this flag if you want to add artist url in to the last message and room topic\n"
+            "\t\t-s | --space <#space:homeserver> - Use this flag if you want to include space name in the room topic\n"
+            "\t\t-pu | --preview-url <website_url> - Use this flag if you want to include stickerpack preview url in the room topic\n"
+            "\t\t-upd | --update-room - Use this flag if you want to update room avatar, name and topic\n"
         )
         await send_text_to_room(self.client, self.room.room_id, text)
 
