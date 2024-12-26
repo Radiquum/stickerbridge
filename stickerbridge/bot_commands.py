@@ -75,7 +75,13 @@ class Command:
             "I am the bot that imports stickers from Telegram and upload them to Matrix rooms\n\n"
             "List of commands:\n"
             "help - Show this help message.\n"
-            "import <url|pack_name> [\"import name\"] [-p | --primary] - Use this to import Telegram stickers from given link. import_name is pack_name if not provided. if -p flag is provided, pack will be uploaded as a Default Pack for this room.\n"
+            "import <url|pack_name> [\"import name\"] - Use this to import a Telegram stickerpack.\n"
+            "\tFlags:\n"
+            "\t\t-p  | --primary - Use this flag if you want to upload pack as a default pack for this room\n"
+            "\t\t-j  | --json - Use this flag if you want create maunium compatable json file with downloaded stickers\n"
+            "\t\t-a  | --artist <artist> - Use this flag if you want to include sticker pack artist to json file\n"
+            "\t\t-au | --artist-url <artist_url> - Use this flag if you want to add artist url to json file\n"
+            "\t\t-r  | --rating <safe|questionable|explicit|s|q|e|sfw|nsfw> - Use this flag if you want add rating to json file\n"
             "preview [pack_name] - Use this to create a preview for a Telegram stickers. If pack_name is not provided, then preview is generated for a primary pack.\n"
             "\tFlags:\n"
             "\t\t-tu | --tg-url <telegram_url|telegram_shortname> - Use this flag if you want to include stickerpack url in the last message\n"
@@ -98,13 +104,20 @@ class Command:
 
         pack_name, import_name, flags = await _parse_args(self.args)
 
-        isDefault = False
-        if any(x in ["-p", "--primary"] for x in flags):
-            isDefault = True
+        # TODO?: add --help flag
+
+        #
+        #   Flags:
+        #       -p  | --primary - Use this flag if you want to upload pack as a default pack for this room
+        #       -j  | --json - Use this flag if you want create maunium compatable json file with downloaded stickers
+        #       -a  | --artist <artist> - Use this flag if you want to include stickerpack artist to json file
+        #       -au | --artist-url <artist_url> - Use this flag if you want to add artist url to json file
+        #       -r  | --rating <safe|questionable|explicit|s|q|e|sfw|nsfw> - Use this flag if you want add rating to json file
+        #
 
         reuploader = MatrixReuploader(self.client, self.room, exporter=self.tg_exporter)
         async for status in reuploader.import_stickerset_to_room(
-            pack_name, import_name, isDefault
+            pack_name, import_name, flags
         ):
             switch = {
                 MatrixReuploader.STATUS_DOWNLOADING: f"Downloading stickerpack {pack_name}...",

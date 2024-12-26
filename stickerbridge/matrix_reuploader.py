@@ -1,11 +1,62 @@
 import tempfile
 import os
+import json
 
 from nio import MatrixRoom, AsyncClient
 
-from chat_functions import has_permission, is_stickerpack_existing, send_text_to_room, upload_image, upload_stickerpack
-from sticker_types import Sticker, MatrixStickerset
+from chat_functions import has_permission, is_stickerpack_existing, upload_image, upload_stickerpack
+from sticker_types import Sticker, MatrixStickerset, MauniumStickerset
 from telegram_exporter import TelegramExporter
+
+async def _parse_args(args: list) -> dict[str, str]:
+
+    parsed_args = {
+        "default": False,
+        "json": False,
+        "artist" : "",
+        "artist_url" : "",
+        "rating" : ""
+    }
+
+    if len(args) == 0:
+        return parsed_args
+
+    for index, arg in enumerate(args):
+        if not arg.startswith("-"):
+            continue
+        if arg in ["-a", "--artist", "-au", "--artist-url", "-r", "--rating"]:
+            parameter = ""
+            value: str = ""
+
+            try:
+                parameter = args[index]
+                value = args[index + 1]
+            except IndexError:
+                continue
+
+            if parameter in ["-r", "--rating"]:
+                if value.lower() not in ["s", "safe", "sfw", "q", "questionable", 'e', 'explicit', "nsfw"]:
+                    continue
+                if value.lower() in ["s", "safe", "sfw"]:
+                    value = "Safe"
+                elif value.lower() in ["q", "questionable"]:
+                    value = "Questionable"
+                elif value.lower() in ['e', 'explicit', 'nsfw']:
+                    value = "Explicit"
+                parsed_args["rating"] = value
+            elif parameter in ["-a", "--artist"]:
+                parsed_args["artist"] = value
+            elif parameter in ["-au", "--artist-url"]:
+                if not value.startswith("http"):
+                    continue
+                parsed_args["artist_url"] = value
+        if arg in ["-p", "--primary", "-j", "--json"]:
+            if arg in ["-p", "--primary"]:
+                parsed_args["default"] = True
+            if arg in ["-j", "--json"]:
+                parsed_args["json"] = True
+
+    return parsed_args
 
 
 class MatrixReuploader:
@@ -33,16 +84,15 @@ class MatrixReuploader:
     async def _has_permission_to_upload(self) -> bool:
         return await has_permission(self.client, self.room.room_id, 'state_default')
 
-    async def import_stickerset_to_room(self, pack_name: str, import_name: str, isDefault: bool):
+    async def import_stickerset_to_room(self, pack_name: str, import_name: str, args: list[str]):
         if not await self._has_permission_to_upload():
             yield self.STATUS_NO_PERMISSION
             return
 
-        name = import_name
-        if import_name.startswith("http"):
-            name = import_name.split("/")[-1]
+        parsed_args = await _parse_args(args)
 
-        stickerset = MatrixStickerset(name)
+        stickerset = MatrixStickerset(import_name)
+        json_stickerset = MauniumStickerset(import_name, pack_name, parsed_args["rating"], {"name": parsed_args["artist"], "url": parsed_args["artist_url"]}, self.room.room_id)
         if await is_stickerpack_existing(self.client, self.room.room_id, stickerset.name()):
             yield self.STATUS_PACK_EXISTS
             return
@@ -59,6 +109,8 @@ class MatrixReuploader:
                 os.unlink(file.name)
 
             stickerset.add_sticker(sticker_mxc, sticker.alt_text)
+            if parsed_args["json"]:
+                json_stickerset.add_sticker(sticker_mxc, sticker.alt_text, sticker.width, sticker.height, sticker.size, sticker.mimetype)
 
         if not stickerset.count():
             yield self.STATUS_PACK_EMPTY
@@ -66,12 +118,16 @@ class MatrixReuploader:
 
         yield self.STATUS_UPDATING_ROOM_STATE
 
-        pack_location = import_name
-        if isDefault:
+        pack_location = pack_name
+        if parsed_args["default"]:
             pack_location = ""
-        elif pack_location.startswith("http"):
-            pack_location = pack_location.split("/")[-1]
 
         await upload_stickerpack(self.client, self.room.room_id, stickerset, pack_location)
+
+        if parsed_args["json"]:
+            if not os.path.exists(f"{os.getcwd()}/data/stickersets/"):
+                os.mkdir(f"{os.getcwd()}/data/stickersets/")
+            with open(f"{os.getcwd()}/data/stickersets/" + json_stickerset.id + ".json", "w", encoding="utf-8") as f:
+                f.write(json.dumps(json_stickerset.json()))
 
         yield self.STATUS_OK

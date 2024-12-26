@@ -14,7 +14,7 @@ from PIL import Image
 from sticker_types import Sticker
 
 
-def _convert_image(data: bytes) -> (bytes, int, int):
+def _convert_image(data: bytes):
     image: Image.Image = Image.open(BytesIO(data)).convert("RGBA")
     new_file = BytesIO()
     image.save(new_file, "png")
@@ -26,7 +26,7 @@ def _convert_image(data: bytes) -> (bytes, int, int):
         else:
             w = int(w / (h / 256))
             h = 256
-    return new_file.getvalue(), w, h
+    return new_file.getvalue(), w, h, "image/png"
 
 
 def _convert_animation(data: bytes, width=256, height=0):
@@ -45,16 +45,18 @@ def _convert_animation(data: bytes, width=256, height=0):
 
     out = BytesIO()
     exporter.process(an, out)
-    return out.getvalue()
+    return out.getvalue(), width, height, "image/webp"
 
 
 def _process_sticker(document) -> Sticker:
-    alt = document.attributes[1].alt
+    alt: str = document.attributes[1].alt
     if document.mime_type == 'image/webp':
-        data, width, height = _convert_image(document.downloaded_data_)
-    if document.mime_type == 'application/x-tgsticker':
-        data = _convert_animation(document.downloaded_data_)
-    return Sticker(data, alt)
+        data, width, height, mime_type = _convert_image(document.downloaded_data_)
+    elif document.mime_type == 'application/x-tgsticker':
+        data, width, height, mime_type = _convert_animation(document.downloaded_data_)
+    else:
+        return
+    return Sticker(data, alt, width, height, document.size, mime_type)
 
 
 class TelegramExporter:

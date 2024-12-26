@@ -17,7 +17,8 @@ async def _parse_args(args: list) -> dict[str, str]:
         return parsed_args
 
     for index, arg in enumerate(args):
-
+        if not arg.startswith("-"):
+            continue
         if arg in ["-tu", "--tg-url", "-a", "--artist", "-au", "--artist-url", "-s", "--space", "-pu", "--preview-url"]:
             parameter = ""
             value = ""
@@ -52,6 +53,7 @@ async def _parse_args(args: list) -> dict[str, str]:
                 parsed_args["preview_url"] = value
         if arg in ["-upd", "--update-room"]:
             parsed_args["update_room"] = True
+
     return parsed_args
 
 
