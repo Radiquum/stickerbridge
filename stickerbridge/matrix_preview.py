@@ -113,7 +113,7 @@ class MatrixPreview:
         if parsed_args["tg_url"]:
             message.append(f"Telegram: {parsed_args['tg_url']}")
         if parsed_args["preview_url"]:
-            topic.append(f"Preview: {parsed_args['tg_url']}")
+            topic.append(f"Preview: {parsed_args['preview_url']}")
 
         topic = " | ".join(topic)
         message = "\n".join(message)
