@@ -5,7 +5,7 @@ from matrix_reuploader import MatrixReuploader
 from matrix_preview import MatrixPreview
 from telegram_exporter import TelegramExporter
 
-async def _parse_args(args: list[str]) -> tuple[str, str, list[str]]:
+async def _parse_args(args: list[str], command: str) -> tuple[str, str, list[str]]:
         _pack_name = ""
         _parsed_args = []
         _import_name = []
@@ -19,13 +19,13 @@ async def _parse_args(args: list[str]) -> tuple[str, str, list[str]]:
                 continue
 
             if index == 1 and not arg.startswith("-") and arg.startswith("\""): # import name should always be 2nd arg
-                arg = arg.strip("\"")
+                arg = arg[1:]
                 _is_import_name = True
-            elif index == 1 and not arg.startswith("-"):
+            elif index == 1 and not arg.startswith("-") and command.split()[0].lower() != "preview":
                 _import_name.append(arg)
                 continue
 
-            if not arg.startswith("-") and arg.endswith("\""):
+            if _is_import_name and not arg.startswith("-") and arg.endswith("\""):
                 if _is_import_name:
                     arg = arg.strip("\"")
                     _import_name.append(arg)
@@ -102,7 +102,7 @@ class Command:
             await send_text_to_room(self.client, self.room.room_id, text)
             return
 
-        pack_name, import_name, flags = await _parse_args(self.args)
+        pack_name, import_name, flags = await _parse_args(self.args, self.command)
 
         # TODO?: add --help flag
 
@@ -140,7 +140,7 @@ class Command:
             await send_text_to_room(self.client, self.room.room_id, text)
 
     async def _generate_preview(self):
-        pack_name, _, flags = await _parse_args(self.args)
+        pack_name, _, flags = await _parse_args(self.args, self.command)
         if pack_name == "":
             await send_text_to_room(
             self.client,
