@@ -8,7 +8,21 @@ telegram_bot_token: "1234567890:aaaaaaaaaaaaaaaaaaaaaa--aaaaaaaaaaa"
 # Please use dedicated, freshly created one
 matrix_homeserver: "https://matrix.org"
 matrix_username: "@username:matrix.org"
+
+# Choose a login type for a bot, "password" or "access_token"
+matrix_login_type: "access_token"
+
+# If using "password", use this
 matrix_password: "password"
+
+# If using "access_token", use this
+# How to get Device ID:
+# 1. Click the "Sessions" tab (left side of the dialog).
+# 2. Click on the current session.
+# 3. Copy "Session ID" string
+matrix_deviceid: "DeviceID"
+# How to get access_token: https://t2bot.io/docs/access_tokens/
+matrix_token: "syn/mct_XXXXXXXXXXXXXXXXXX"
 
 command_prefix: "!sb"
 matrix_bot_name: "Telegram stickers bot"

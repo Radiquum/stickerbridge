@@ -58,7 +58,7 @@ class Command:
         self.room = room
         self.command = command.lower()
         self.tg_exporter = tg_exporter
-        self.args = self.command.split()[1:]
+        self.args = command.split()[1:]
 
     async def process(self):
         if self.command.startswith("help"):

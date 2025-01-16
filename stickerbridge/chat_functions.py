@@ -82,12 +82,16 @@ async def upload_image(client: AsyncClient, image: str):
     mime_type = magic.from_file(image, mime=True)
     file_stat = await aiofiles.os.stat(image)
     async with aiofiles.open(image, "r+b") as f:
-        resp, maybe_keys = await client.upload(
-            f,
-            content_type=mime_type,
-            filename=os.path.basename(image),
-            filesize=file_stat.st_size,
-        )
+        try:
+            resp, maybe_keys = await client.upload(
+                f,
+                content_type=mime_type,
+                filename=os.path.basename(image),
+                filesize=file_stat.st_size,
+            )
+        except:
+            logging.error(f"Failed to upload image ({image})")
+            return ""
     if isinstance(resp, UploadResponse):
         logging.debug(f"Image {image} was uploaded successfully to server.")
         return resp.content_uri
