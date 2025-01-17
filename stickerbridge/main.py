@@ -37,14 +37,8 @@ async def main():
     client.add_event_callback(callbacks.autojoin_room, InviteMemberEvent)
 
     if config['matrix_login_type'] == 'password':
-        if not config['matrix_password']:
-            logging.warning('Please fill in config.yaml file, then restart the bot')
-            raise ValueError(f'No Password')
         login_response = await client.login(config['matrix_password'])
     elif config['matrix_login_type'] == 'access_token':
-        if not config['matrix_token'] or not config['matrix_deviceid']:
-            logging.warning('Please fill in config.yaml file, then restart the bot')
-            raise ValueError(f'No access_token or Device ID')
         login_response = client.restore_login(config['matrix_username'], config['matrix_deviceid'], config['matrix_token'])
     else:
         raise ValueError(f'Unknown login type: "{config["matrix_login_type"]}" only "password" and "access_token" are supported')

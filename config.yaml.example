@@ -14,23 +14,17 @@ matrix_login_type: "access_token"
 
 # If using "password", use this
 matrix_password: "password"
+matrix_bot_name: "Telegram stickers bot"
 
 # If using "access_token", use this
-# How to get access_token if using synapse: https://t2bot.io/docs/access_tokens/
-# How to get access_token if using MAS, refer to this github issue:
-# https://github.com/etkecc/synapse-admin/issues/38
-# but omit the '--yes-i-want-to-grant-synapse-admin-privileges' flag
+# How to get access_token: https://t2bot.io/docs/access_tokens/
 matrix_token: "syn/mct_XXXXXXXXXXXXXXXXXX"
-
-# IF Using MAS then device ID can be set as any string value
-# IF Using Synapse then device ID can be get with the following:
-# How to get Device ID:
+# How to get current session id:
 # 1. Click the "Sessions" tab (left side of the dialog).
 # 2. Click on the current session.
 # 3. Copy "Session ID" string
-matrix_deviceid: "Matrix-Telegram-Bot"
+matrix_deviceid: "A1sbDXXX"
 
 command_prefix: "!sb"
-matrix_bot_name: "Telegram stickers bot"
 
 log_level: INFO
