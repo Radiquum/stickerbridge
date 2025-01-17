@@ -32,6 +32,7 @@ command_prefix: "!sb"
 import:
   set_primary: True
   save_json: True
+  update_pack: True
 
 preview:
   space: null
