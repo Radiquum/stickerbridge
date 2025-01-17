@@ -2,10 +2,11 @@ import tempfile
 import os
 import json
 import yaml
+import hashlib
 
 from nio import MatrixRoom, AsyncClient
 
-from chat_functions import has_permission, is_stickerpack_existing, upload_image, upload_stickerpack
+from chat_functions import has_permission, is_stickerpack_existing, get_stickerpack, upload_image, upload_stickerpack
 from sticker_types import Sticker, MatrixStickerset, MauniumStickerset
 from telegram_exporter import TelegramExporter
 
@@ -20,7 +21,8 @@ async def _parse_args(args: list) -> dict[str, str]:
         "json": config_params['import']['save_json'] or False,
         "artist" : None,
         "artist_url" : None,
-        "rating" : None
+        "rating" : None,
+        "update_pack": config_params['import']['update_pack'] or False
     }
 
     if len(args) == 0:
@@ -60,6 +62,8 @@ async def _parse_args(args: list) -> dict[str, str]:
                 parsed_args["default"] = not parsed_args["default"]
             if arg in ["-j", "--json"]:
                 parsed_args["json"] = not parsed_args["json"]
+            if arg in ["-u", "--upd"]:
+                parsed_args["json"] = not parsed_args["json"]
 
     return parsed_args
 
@@ -74,6 +78,7 @@ class MatrixReuploader:
     STATUS_DOWNLOADING = 4
     STATUS_UPLOADING = 5
     STATUS_UPDATING_ROOM_STATE = 6
+    STATUS_PACK_UPDATE = 7
 
     def __init__(self, client: AsyncClient, room: MatrixRoom, exporter: TelegramExporter = None,
                  pack: list[Sticker] = None):
@@ -96,24 +101,56 @@ class MatrixReuploader:
 
         parsed_args = await _parse_args(args)
 
-        stickerset = MatrixStickerset(import_name, pack_name, parsed_args["rating"], {"name": parsed_args["artist"], "url": parsed_args["artist_url"]})
-        json_stickerset = MauniumStickerset(import_name, pack_name, parsed_args["rating"], {"name": parsed_args["artist"], "url": parsed_args["artist_url"]}, self.room.room_id)
-        if await is_stickerpack_existing(self.client, self.room.room_id, stickerset.name()):
-            yield self.STATUS_PACK_EXISTS
-            return
+        pack_location = pack_name
+        if parsed_args["default"]:
+            pack_location = ""
+
+        exists = await is_stickerpack_existing(self.client, self.room.room_id, pack_location)
+        stickerpack = None;
+        if exists:
+            if parsed_args["update_pack"]:
+                stickerpack = await get_stickerpack(self.client, self.room.room_id, pack_location)
+                if parsed_args["rating"] is None:
+                    parsed_args["rating"] = stickerpack["pack"].get("rating", None)
+                if parsed_args["artist"] is None and stickerpack["pack"].get("artist", None) is not None:
+                    parsed_args["artist"] = stickerpack["pack"]["artist"].get("name", None)
+                if parsed_args["artist_url"] is None and stickerpack["pack"].get("url", None) is not None:
+                    parsed_args["artist_url"] = stickerpack["pack"]["artist"].get("url", None)
+                yield self.STATUS_PACK_UPDATE
+            else:
+                yield self.STATUS_PACK_EXISTS
+                return
 
         yield self.STATUS_DOWNLOADING
-        converted_stickerset = await self.exporter.get_stickerset(pack_name)
+        converted_stickerset = await self.exporter.get_stickerset(import_name)
         yield self.STATUS_UPLOADING
+
+        stickerset = MatrixStickerset(import_name, pack_name, parsed_args["rating"], {"name": parsed_args["artist"], "url": parsed_args["artist_url"]})
+        json_stickerset = MauniumStickerset(import_name, pack_name, parsed_args["rating"], {"name": parsed_args["artist"], "url": parsed_args["artist_url"]}, self.room.room_id)
+
+        n = 0
         for sticker in converted_stickerset:
             with tempfile.NamedTemporaryFile('w+b', delete=False) as file:
                 file.write(sticker.image_data)
-                sticker_mxc = await upload_image(self.client, file.name)
+                hash = hashlib.md5(sticker.image_data).hexdigest()
+                name = f"{pack_name}__{sticker.alt_text}__{os.path.basename(file.name)}"
 
+                sticker_mxc = None
+                if stickerpack is not None and stickerpack.get('images', None) is not None:
+                    for stick in stickerpack['images'].values():
+                        if stick.get('hash', None) is not None and stick["hash"] == hash:
+                            sticker_mxc = stick["url"]
+                            print(f"sticker already exists, hash: {hash}")
+                            break
+
+                if sticker_mxc is None:
+                    sticker_mxc = await upload_image(self.client, file.name, name)
                 file.close()
                 os.unlink(file.name)
 
-            stickerset.add_sticker(sticker_mxc, sticker.alt_text)
+            stickerset.add_sticker(sticker_mxc, sticker.alt_text, hash)
+            n += 1
+            print(f"Uploaded: {n}/{len(converted_stickerset)}")
             if parsed_args["json"]:
                 json_stickerset.add_sticker(sticker_mxc, sticker.alt_text, sticker.width, sticker.height, sticker.size, sticker.mimetype)
 
@@ -122,10 +159,6 @@ class MatrixReuploader:
             return
 
         yield self.STATUS_UPDATING_ROOM_STATE
-
-        pack_location = pack_name
-        if parsed_args["default"]:
-            pack_location = ""
 
         await upload_stickerpack(self.client, self.room.room_id, stickerset, pack_location)
 

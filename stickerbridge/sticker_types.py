@@ -22,17 +22,18 @@ class MatrixStickerset:
             "images": {}
         }
 
-    def add_sticker(self, mxc_uri: str, alt_text: str):
+    def add_sticker(self, mxc_uri: str, alt_text: str, hash=""):
         if alt_text in self._content['images']:
             duplicate_counter = 1
             alt_text = alt_text + '-' + str(duplicate_counter)
             while (alt_text in self._content['images']):
                 duplicate_counter += 1
                 alt_text = alt_text.split('-')[0] + '-' + str(duplicate_counter)
-                print(alt_text)
+        print(alt_text)
         self._content['images'][alt_text] = {
             "url": mxc_uri,
-            "usage": ["sticker"]
+            "usage": ["sticker"],
+            "hash": hash
         }
 
     def count(self):

@@ -1,4 +1,5 @@
 import os
+from typing import Union
 
 import aiofiles.os
 import magic
@@ -83,15 +84,17 @@ async def update_room_name(client: AsyncClient, room_id: str, name: str):
 async def update_room_topic(client: AsyncClient, room_id: str, topic: str):
     return await client.room_put_state(room_id, 'm.room.topic', {"topic": topic})
 
-async def upload_image(client: AsyncClient, image: str):
+async def upload_image(client: AsyncClient, image: str, name: Union[str, None] = None):
     mime_type = magic.from_file(image, mime=True)
     file_stat = await aiofiles.os.stat(image)
+    if name is None:
+        name = os.path.basename(image)
     async with aiofiles.open(image, "r+b") as f:
         try:
             resp, maybe_keys = await client.upload(
                 f,
                 content_type=mime_type,
-                filename=os.path.basename(image),
+                filename=name,
                 filesize=file_stat.st_size,
             )
         except:

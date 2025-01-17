@@ -136,6 +136,9 @@ class Command:
                     f"Stickerpack '{pack_name}' already exists.\n"
                     "Please delete it first."
                 ),
+                MatrixReuploader.STATUS_PACK_UPDATE: (
+                    f"Updating Stickerpack '{pack_name}'.\n"
+                ),
                 MatrixReuploader.STATUS_PACK_EMPTY: (
                     f"Warning: Telegram pack {pack_name} find out empty or not existing."
                 ),

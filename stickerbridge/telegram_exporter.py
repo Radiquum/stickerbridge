@@ -74,20 +74,21 @@ class TelegramExporter:
     async def get_stickerset(self, pack_name: str) -> list[Sticker]:
         result: List[Sticker] = list()
 
-        short_name = pack_name
-        if short_name.startswith('http'):
-            short_name = pack_name.split("/")[-1]
-
         try:
-            sticker_set = await self.client(GetStickerSetRequest(InputStickerSetShortName(short_name=short_name), hash=0))
+            sticker_set = await self.client(GetStickerSetRequest(InputStickerSetShortName(short_name=pack_name), hash=0))
         except StickersetInvalidError:
             return result  # return empty on fail
 
         downloaded_documents = []
+
+        n = 0
         for document_data in sticker_set.documents:
             document_data.downloaded_data_ = await self.client.download_media(document_data, file=bytes)
             downloaded_documents.append(document_data)
+            n += 1
+            print(f"Downloaded: {n}/{len(sticker_set.documents)}")
 
+        print("Processing stickers...")
         pool = Pool()
         result = pool.map(_process_sticker, downloaded_documents)
 
