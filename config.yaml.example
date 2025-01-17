@@ -27,4 +27,15 @@ matrix_deviceid: "A1sbDXXX"
 
 command_prefix: "!sb"
 
+# Default Parameters Configuration of commands
+
+import:
+  set_primary: True
+  save_json: True
+
+preview:
+  space: null
+  preview_url_base: null
+  update_room: True
+
 log_level: INFO

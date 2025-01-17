@@ -1,6 +1,7 @@
 import tempfile
 import os
 import json
+import yaml
 
 from nio import MatrixRoom, AsyncClient
 
@@ -10,12 +11,16 @@ from telegram_exporter import TelegramExporter
 
 async def _parse_args(args: list) -> dict[str, str]:
 
+    if os.path.exists('config.yaml'):
+        with open("config.yaml", 'r') as config_file:
+            config_params = yaml.safe_load(config_file)
+
     parsed_args = {
-        "default": False,
-        "json": False,
-        "artist" : "",
-        "artist_url" : "",
-        "rating" : ""
+        "default": config_params['import']['set_primary'] or False,
+        "json": config_params['import']['save_json'] or False,
+        "artist" : None,
+        "artist_url" : None,
+        "rating" : None
     }
 
     if len(args) == 0:
@@ -52,9 +57,9 @@ async def _parse_args(args: list) -> dict[str, str]:
                 parsed_args["artist_url"] = value
         if arg in ["-p", "--primary", "-j", "--json"]:
             if arg in ["-p", "--primary"]:
-                parsed_args["default"] = True
+                parsed_args["default"] = not parsed_args["default"]
             if arg in ["-j", "--json"]:
-                parsed_args["json"] = True
+                parsed_args["json"] = not parsed_args["json"]
 
     return parsed_args
 
@@ -91,7 +96,7 @@ class MatrixReuploader:
 
         parsed_args = await _parse_args(args)
 
-        stickerset = MatrixStickerset(import_name)
+        stickerset = MatrixStickerset(import_name, pack_name, parsed_args["rating"], {"name": parsed_args["artist"], "url": parsed_args["artist_url"]})
         json_stickerset = MauniumStickerset(import_name, pack_name, parsed_args["rating"], {"name": parsed_args["artist"], "url": parsed_args["artist_url"]}, self.room.room_id)
         if await is_stickerpack_existing(self.client, self.room.room_id, stickerset.name()):
             yield self.STATUS_PACK_EXISTS

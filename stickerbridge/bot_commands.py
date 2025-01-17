@@ -82,14 +82,17 @@ class Command:
             "\t\t-a  | --artist <artist> - Use this flag if you want to include sticker pack artist to json file\n"
             "\t\t-au | --artist-url <artist_url> - Use this flag if you want to add artist url to json file\n"
             "\t\t-r  | --rating <safe|questionable|explicit|s|q|e|sfw|nsfw> - Use this flag if you want add rating to json file\n"
+            "\t\tIF boolean flags are true in config, and are provided, they are applied as a False.\n"
             "preview [pack_name] - Use this to create a preview for a Telegram stickers. If pack_name is not provided, then preview is generated for a primary pack.\n"
             "\tFlags:\n"
-            "\t\t-tu | --tg-url <telegram_url|telegram_shortname> - Use this flag if you want to include stickerpack url in the last message\n"
-            "\t\t-a | --artist <artist> - Use this flag if you want to include stickerpack artist in the last message and room topic\n"
-            "\t\t-au | --artist-url <artist_url> - Use this flag if you want to add artist url in to the last message and room topic\n"
-            "\t\t-s | --space <#space:homeserver> - Use this flag if you want to include space name in the room topic\n"
-            "\t\t-pu | --preview-url <website_url> - Use this flag if you want to include stickerpack preview url in the room topic\n"
+            "\t\t-tu | --tg-url [telegram_url|telegram_shortname] - Use this flag if you want to include stickerpack url in the last message\n"
+            "\t\t-a | --artist [artist] - Use this flag if you want to include stickerpack artist in the last message and room topic\n"
+            "\t\t-au | --artist-url [artist_url] - Use this flag if you want to add artist url in to the last message and room topic\n"
+            "\t\t-s | --space [#space:homeserver] - Use this flag if you want to include space name in the room topic\n"
+            "\t\t-pu | --preview-url [website_url] - Use this flag if you want to include stickerpack preview url in the room topic\n"
             "\t\t-upd | --update-room - Use this flag if you want to update room avatar, name and topic\n"
+            "\t\tIF flags are provided, without parameters, then parameters are taken from the pack content if were provided on import or config!\n"
+            "\t\tIF boolean flags are true in config, and are provided, they are applied as a False.\n"
         )
         await send_text_to_room(self.client, self.room.room_id, text)
 
@@ -113,6 +116,7 @@ class Command:
         #       -a  | --artist <artist> - Use this flag if you want to include stickerpack artist to json file
         #       -au | --artist-url <artist_url> - Use this flag if you want to add artist url to json file
         #       -r  | --rating <safe|questionable|explicit|s|q|e|sfw|nsfw> - Use this flag if you want add rating to json file
+        #       IF boolean flags are true in config, and are provided, they are applied as a False.
         #
 
         reuploader = MatrixReuploader(self.client, self.room, exporter=self.tg_exporter)
@@ -151,12 +155,14 @@ class Command:
 
         #
         #   Flags:
-        #       -tu | --tg-url <telegram_url|telegram_shortname> - Use this flag if you want to include stickerpack url in the last message
-        #       -a | --artist <artist> - Use this flag if you want to include stickerpack artist in the last message and room topic
-        #       -au | --artist-url <artist_url> - Use this flag if you want to add artist url in to the last message and room topic
-        #       -s | --space <#space:homeserver> - Use this flag if you want to include space name in the room topic
-        #       -pu | --preview-url <website_url> - Use this flag if you want to include stickerpack preview url in the room topic
+        #       -tu | --tg-url [telegram_url|telegram_shortname] - Use this flag if you want to include stickerpack url in the last message.
+        #       -a | --artist [artist] - Use this flag if you want to include stickerpack artist in the last message and room topic
+        #       -au | --artist-url [artist_url] - Use this flag if you want to add artist url in to the last message and room topic
+        #       -s | --space [#space:homeserver] - Use this flag if you want to include space name in the room topic
+        #       -pu | --preview-url [website_url] - Use this flag if you want to include stickerpack preview url in the room topic
         #       -upd | --update-room - Use this flag if you want to update room avatar, name and topic
+        #       IF flags are provided, without parameters, then parameters are taken from the pack content if were provided on import or config!
+        #       IF boolean flags are true in config, and are provided, they are applied as a False.
 
         previewer = MatrixPreview(self.client, self.room)
         async for status in previewer.generate_stickerset_preview_to_room(pack_name, flags):

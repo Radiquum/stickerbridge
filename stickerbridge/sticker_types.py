@@ -11,10 +11,13 @@ class Sticker:
 
 
 class MatrixStickerset:
-    def __init__(self, pack_name: str):
+    def __init__(self, import_name: str, pack_name: str, rating: str, author: str):
         self._content = {
             "pack": {
-                "display_name": pack_name
+                "display_name": import_name,
+                "pack_id": pack_name,
+                "rating": rating,
+                "author": author
             },
             "images": {}
         }
@@ -37,6 +40,9 @@ class MatrixStickerset:
 
     def name(self):
         return self._content['pack']['display_name']
+
+    def id(self):
+        return self._content['pack']['pack_id']
 
     def json(self):
         return self._content
