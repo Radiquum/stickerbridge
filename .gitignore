@@ -1,4 +1,5 @@
 config.yaml
+cli.yaml
 data/*
 telegram_secrets.session
 */.directory
