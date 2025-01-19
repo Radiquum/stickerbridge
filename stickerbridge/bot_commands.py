@@ -82,6 +82,7 @@ class Command:
             "\t\t-a  | --artist <artist> - Use this flag if you want to include sticker pack artist to json file\n"
             "\t\t-au | --artist-url <artist_url> - Use this flag if you want to add artist url to json file\n"
             "\t\t-r  | --rating <safe|questionable|explicit|s|q|e|sfw|nsfw> - Use this flag if you want add rating to json file\n"
+            "\t\t-upd | --update-room - Update pack if it already exists\n"
             "\t\tIF boolean flags are true in config, and are provided, they are applied as a False.\n"
             "preview [pack_name] - Use this to create a preview for a Telegram stickers. If pack_name is not provided, then preview is generated for a primary pack.\n"
             "\tFlags:\n"

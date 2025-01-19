@@ -17,8 +17,8 @@ async def _parse_args(args: list) -> dict[str, str]:
             config_params = yaml.safe_load(config_file)
 
     parsed_args = {
-        "default": config_params['import']['set_primary'] or False,
-        "json": config_params['import']['save_json'] or False,
+        "default": config_params['import']['primary'] or False,
+        "json": config_params['import']['json'] or False,
         "artist" : None,
         "artist_url" : None,
         "rating" : None,
@@ -62,7 +62,7 @@ async def _parse_args(args: list) -> dict[str, str]:
                 parsed_args["default"] = not parsed_args["default"]
             if arg in ["-j", "--json"]:
                 parsed_args["json"] = not parsed_args["json"]
-            if arg in ["-u", "--upd"]:
+            if arg in ["-upd", "--update-pack"]:
                 parsed_args["json"] = not parsed_args["json"]
 
     return parsed_args
@@ -122,7 +122,7 @@ class MatrixReuploader:
                 return
 
         yield self.STATUS_DOWNLOADING
-        converted_stickerset = await self.exporter.get_stickerset(import_name)
+        converted_stickerset = await self.exporter.get_stickerset(pack_name)
         yield self.STATUS_UPLOADING
 
         stickerset = MatrixStickerset(import_name, pack_name, parsed_args["rating"], {"name": parsed_args["artist"], "url": parsed_args["artist_url"]})
