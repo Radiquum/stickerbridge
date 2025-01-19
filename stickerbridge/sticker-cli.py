@@ -33,15 +33,15 @@ import_cmd.add_argument('import_name', type=str, help='Sticker pack display name
 
 import_cmd.add_argument('--primary', '-p', action='store_true', help='Upload pack as a default pack for this room')
 import_cmd.add_argument('--json', '-j', action='store_true', help='Create a "maunium stickerpicker" compatible json file with downloaded stickers')
-import_cmd.add_argument('--artist', '-a', type=str, help='Ask for the artist name of the sticker pack', nargs="?", default='False')
-import_cmd.add_argument('--artist-url', '-au', type=str, help='Ask for the artist page url', nargs="?", default='False')
+import_cmd.add_argument('--artist', '-a', type=str, help='Artist name of the sticker pack', nargs="?", default='False')
+import_cmd.add_argument('--artist-url', '-au', type=str, help='Artist page url', nargs="?", default='False')
 import_cmd.add_argument('--rating', '-r', choices=('S', 'Q', 'E', 'U'), help='Set the rating of the sticker pack. Safe/Questionable/Explicit/Unrated ', default='U')
 import_cmd.add_argument('--room', '-rm', type=str, help='Set a room for the sticker upload')
 import_cmd.add_argument('--create-room', '-cr', action='store_true', help='Create a new room for imported stickers')
 import_cmd.add_argument('--space', '-s', type=str, help='Space to include the new room in. (You will need to invite the bot first!)')
 import_cmd.add_argument('--update-pack', '-u', action='store_true', help='Update pack if it already exists')
 
-import_cmd.epilog = 'IF boolean flags are true in "cli.yaml", and are provided here, they are applied as a False.'
+import_cmd.epilog = 'IF boolean flags are true in "config.yaml" or "cli.yaml", and are provided here, they are applied as a False.'
 
 async def main(args):
     os.makedirs('data', exist_ok=True)
