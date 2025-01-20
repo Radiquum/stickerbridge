@@ -1,0 +1,22 @@
+# This is a file with CLI specific configuration for the auto room creation and sticker import/preview
+
+# Room settings for the commands
+room:
+  prefix: "" # optional, must be a string
+  homeserver: "example.com" # required, must be a string
+  # autoinvite: # optional, Autoinvite selected users with selected power, must be a list.
+  #   - user: "@username:example.com"
+  #     power: 100 # 0 - default, 50 - moderator, 100 - admin
+
+
+import:
+  artist: False # Prompt for artist input, in flag is not provided.
+  artist_url: False # Prompt for artist page url input, in flag is not provided.
+  create_room: True # Create a room for the new stickerpack if it doesn't exist
+
+preview:
+  include_tg_url: True
+  include_artist: True
+  include_artist_url: True
+  not_include_space: False
+  not_include_preview_url: False
