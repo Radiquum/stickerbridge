@@ -65,7 +65,7 @@ async def _parse_args(args: list) -> dict[str, str]:
             if arg in ["-j", "--json"]:
                 parsed_args["json"] = not parsed_args["json"]
             if arg in ["-upd", "--update-pack"]:
-                parsed_args["json"] = not parsed_args["json"]
+                parsed_args["update_pack"] = not parsed_args["update_pack"]
 
     return parsed_args
 
