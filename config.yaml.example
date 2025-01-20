@@ -30,13 +30,13 @@ command_prefix: "!sb"
 # Default Parameters Configuration of commands
 
 import:
-  set_primary: True
-  save_json: True
+  primary: True
+  json: True
   update_pack: True
 
 preview:
-  space: null
-  preview_url_base: null
+  space: null # string or null
+  preview_url_base: null # string or null
   update_room: True
 
 log_level: INFO
