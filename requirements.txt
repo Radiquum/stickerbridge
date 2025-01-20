@@ -6,3 +6,4 @@ aiofiles
 python-magic
 lottie
 cairosvg
+tqdm

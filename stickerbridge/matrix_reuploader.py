@@ -3,6 +3,8 @@ import os
 import json
 import yaml
 import hashlib
+import logging
+from tqdm.auto import tqdm
 
 from nio import MatrixRoom, AsyncClient
 
@@ -57,7 +59,7 @@ async def _parse_args(args: list) -> dict[str, str]:
                 if not value.startswith("http"):
                     continue
                 parsed_args["artist_url"] = value
-        if arg in ["-p", "--primary", "-j", "--json"]:
+        if arg in ["-p", "--primary", "-j", "--json", "-upd", "--update-pack"]:
             if arg in ["-p", "--primary"]:
                 parsed_args["default"] = not parsed_args["default"]
             if arg in ["-j", "--json"]:
@@ -128,31 +130,29 @@ class MatrixReuploader:
         stickerset = MatrixStickerset(import_name, pack_name, parsed_args["rating"], {"name": parsed_args["artist"], "url": parsed_args["artist_url"]})
         json_stickerset = MauniumStickerset(import_name, pack_name, parsed_args["rating"], {"name": parsed_args["artist"], "url": parsed_args["artist_url"]}, self.room.room_id)
 
-        n = 0
-        for sticker in converted_stickerset:
-            with tempfile.NamedTemporaryFile('w+b', delete=False) as file:
-                file.write(sticker.image_data)
-                hash = hashlib.md5(sticker.image_data).hexdigest()
-                name = f"{pack_name}__{sticker.alt_text}__{os.path.basename(file.name)}"
+        with tqdm(total=len(converted_stickerset)) as tqdm_object:
+            for sticker in converted_stickerset:
+                with tempfile.NamedTemporaryFile('w+b', delete=False) as file:
+                    file.write(sticker.image_data)
+                    hash = hashlib.md5(sticker.image_data).hexdigest()
+                    name = f"{pack_name}__{sticker.alt_text}__{os.path.basename(file.name)}"
 
-                sticker_mxc = None
-                if stickerpack is not None and stickerpack.get('images', None) is not None:
-                    for stick in stickerpack['images'].values():
-                        if stick.get('hash', None) is not None and stick["hash"] == hash:
-                            sticker_mxc = stick["url"]
-                            print(f"sticker already exists, hash: {hash}")
-                            break
+                    sticker_mxc = None
+                    if stickerpack is not None and stickerpack.get('images', None) is not None:
+                        for stick in stickerpack['images'].values():
+                            if stick.get('hash', None) is not None and stick["hash"] == hash:
+                                sticker_mxc = stick["url"]
+                                break
 
-                if sticker_mxc is None:
-                    sticker_mxc = await upload_image(self.client, file.name, name)
-                file.close()
-                os.unlink(file.name)
+                    if sticker_mxc is None:
+                        sticker_mxc = await upload_image(self.client, file.name, name)
+                    file.close()
+                    os.unlink(file.name)
 
-            stickerset.add_sticker(sticker_mxc, sticker.alt_text, hash)
-            n += 1
-            print(f"Uploaded: {n}/{len(converted_stickerset)}")
-            if parsed_args["json"]:
-                json_stickerset.add_sticker(sticker_mxc, sticker.alt_text, sticker.width, sticker.height, sticker.size, sticker.mimetype)
+                stickerset.add_sticker(sticker_mxc, sticker.alt_text, hash)
+                if parsed_args["json"]:
+                    json_stickerset.add_sticker(sticker_mxc, sticker.alt_text, sticker.width, sticker.height, sticker.size, sticker.mimetype)
+                tqdm_object.update(1)
 
         if not stickerset.count():
             yield self.STATUS_PACK_EMPTY

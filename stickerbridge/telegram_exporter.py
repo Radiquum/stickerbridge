@@ -1,6 +1,9 @@
 from multiprocessing import Pool
 from typing import List
 
+import logging
+from tqdm.auto import tqdm
+
 from lottie.importers import importers
 from lottie.exporters import exporters
 from telethon import TelegramClient
@@ -71,7 +74,12 @@ class TelegramExporter:
     async def connect(self):
         await self.client.start(bot_token=self.bot_token)
 
+    async def close(self):
+        await self.client.disconnect()
+
     async def get_stickerset(self, pack_name: str) -> list[Sticker]:
+        logging.getLogger('telethon').setLevel(logging.WARNING)
+
         result: List[Sticker] = list()
 
         try:
@@ -81,15 +89,15 @@ class TelegramExporter:
 
         downloaded_documents = []
 
-        n = 0
-        for document_data in sticker_set.documents:
-            document_data.downloaded_data_ = await self.client.download_media(document_data, file=bytes)
-            downloaded_documents.append(document_data)
-            n += 1
-            print(f"Downloaded: {n}/{len(sticker_set.documents)}")
+        with tqdm(total=len(sticker_set.documents)) as tqdm_object:
+            for document_data in sticker_set.documents:
+                document_data.downloaded_data_ = await self.client.download_media(document_data, file=bytes)
+                downloaded_documents.append(document_data)
+                tqdm_object.update(1)
 
-        print("Processing stickers...")
+        logging.info(f"Processing downloaded stickers...")
         pool = Pool()
-        result = pool.map(_process_sticker, downloaded_documents)
+        # result = pool.map(_process_sticker, downloaded_documents)
+        result = list(tqdm(pool.imap(_process_sticker, downloaded_documents), total=len(downloaded_documents)))
 
         return result

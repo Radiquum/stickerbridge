@@ -29,7 +29,6 @@ class MatrixStickerset:
             while (alt_text in self._content['images']):
                 duplicate_counter += 1
                 alt_text = alt_text.split('-')[0] + '-' + str(duplicate_counter)
-        print(alt_text)
         self._content['images'][alt_text] = {
             "url": mxc_uri,
             "usage": ["sticker"],

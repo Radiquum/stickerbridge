@@ -39,7 +39,7 @@ import_cmd.add_argument('--rating', '-r', choices=('S', 'Q', 'E', 'U'), help='Se
 import_cmd.add_argument('--room', '-rm', type=str, help='Set a room for the sticker upload')
 import_cmd.add_argument('--create-room', '-cr', action='store_true', help='Create a new room for imported stickers')
 import_cmd.add_argument('--space', '-s', type=str, help='Space to include the new room in. (You will need to invite the bot first!)')
-import_cmd.add_argument('--update-pack', '-u', action='store_true', help='Update pack if it already exists')
+import_cmd.add_argument('--update-pack', '-upd', action='store_true', help='Update pack if it already exists')
 
 import_cmd.epilog = 'IF boolean flags are true in "config.yaml" or "cli.yaml", and are provided here, they are applied as a False.'
 
@@ -57,7 +57,8 @@ async def main(args):
     with open(args.cli_config, 'r') as config_file:
         cli_config = yaml.safe_load(config_file)
 
-    logging.basicConfig(level=os.environ.get("LOGLEVEL", config['log_level']))
+    fmt = f"%(asctime)-20s | %(filename)-20s | %(levelname)s : %(message)s"
+    logging.basicConfig(level=os.environ.get("LOGLEVEL", config['log_level']), format=fmt, handlers=[logging.StreamHandler()])
 
     client = AsyncClient(config['matrix_homeserver'], config['matrix_username'])
     client.device_id = config['matrix_bot_name']
@@ -74,6 +75,7 @@ async def main(args):
     if sys.argv[1] == 'import':
         await import_stickerpack(args, client, config, cli_config)
 
+    await client.close()
 
 async def import_stickerpack(args: argparse.Namespace, client: AsyncClient, config: dict, cli_config: dict):
     if args.pack_name.startswith('https://t.me/addstickers/'):
@@ -144,6 +146,7 @@ async def import_stickerpack(args: argparse.Namespace, client: AsyncClient, conf
             text = switch.get(status, "Warning: Unknown status")
             logging.info(text)
 
+    await tg_exporter.close()
 
 async def create_or_get_room(args: argparse.Namespace, client: AsyncClient, config: dict, cli_config: dict):
 
